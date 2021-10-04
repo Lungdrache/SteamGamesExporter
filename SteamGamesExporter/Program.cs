@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Newtonsoft.Json;
+using SteamGamesExporter.Classes;
 
 namespace SteamGamesExporter
 {
@@ -13,41 +15,58 @@ namespace SteamGamesExporter
         [STAThread]
         static void Main(string[] args)
         {
-            // open Json File
-            OpenFileExplorer("JSON-File (*.json)|*.json");
+            // the selected Json File
+            string jsonFile = "";
 
+            // open FileDialog to search for the Steam Json File
+            jsonFile = OpenFileExplorer("JSON-File (*.json)|*.json");
 
-            MessageBox.Show("worked", "File Content at path: ", MessageBoxButtons.OK);
+            // Converts the Json to a Elementslist
+            Applist list =
+                JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
+
         }
 
+
+        // is used as simple FIleDialog Solution to start it whenever needed
         static string OpenFileExplorer(string filter,string startFolder = "c:\\")
         {
+            // content of the selected File
             var fileContent = string.Empty;
+            // Path of the whole File
             var filePath = string.Empty;
 
+            // uses the filedialog to Open files
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
+                // Prepare all settings for the fileDialog
                 openFileDialog.InitialDirectory = startFolder;
                 openFileDialog.Filter = filter;
                 openFileDialog.FilterIndex = 2;
                 openFileDialog.RestoreDirectory = true;
-                while (openFileDialog.ShowDialog() != DialogResult.OK || string.IsNullOrWhiteSpace(openFileDialog.FileName))
-                {
 
+                DialogResult diaResult;
+                // Repeat by accidently clicking wrong or no file
+                do
+                {
+                    diaResult = openFileDialog.ShowDialog();
+                    // if a files was selected
                     if (!string.IsNullOrWhiteSpace(openFileDialog.FileName))
                     {
 
-                        //Get the path of specified file
+                        // get the path of specified file
                         filePath = openFileDialog.FileName;
 
-                        //Read the contents of the file into a stream
+                        // read the contents of the file into a stream
                         var fileStream = openFileDialog.OpenFile();
 
                         using (StreamReader reader = new StreamReader(fileStream))
                         {
                             fileContent = reader.ReadToEnd();
                         }
-                        if (openFileDialog.ShowDialog() != DialogResult.OK)
+
+                        // if the result was negative by selecting a wrong file
+                        if (diaResult != DialogResult.OK)
                         {
                             DialogResult result = MessageBox.Show("Want to try again?", "Wrong File", MessageBoxButtons.RetryCancel);
                             switch (result)
@@ -64,6 +83,7 @@ namespace SteamGamesExporter
 
                         }
                     }
+                    // if the result was negative by canceling or exiting the file dialog
                     else
                     {
 
@@ -79,7 +99,9 @@ namespace SteamGamesExporter
                                 break;
                         }
                     }
-                }
+                } while (diaResult != DialogResult.OK || string.IsNullOrWhiteSpace(fileContent));
+
+                // return Json string text file
                 return fileContent;
             }
         }
