@@ -28,6 +28,12 @@ namespace SteamGamesExporter
         }
 
 
+        public void ShowMenu()
+        {
+
+        }
+
+
         // is used as simple FIleDialog Solution to start it whenever needed
         static string OpenFileExplorer(string filter,string startFolder = "c:\\")
         {

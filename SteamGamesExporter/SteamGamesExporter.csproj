@@ -47,7 +47,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\App.cs" />
+    <Compile Include="Classes\Steam\App.cs" />
+    <Compile Include="Classes\Products.cs" />
+    <Compile Include="Classes\Steam\Category.cs" />
+    <Compile Include="Classes\Steam\ContentDescriptors.cs" />
+    <Compile Include="Classes\Steam\DetailView.cs" />
+    <Compile Include="Classes\Steam\Genre.cs" />
+    <Compile Include="Classes\Steam\LinuxRequirements.cs" />
+    <Compile Include="Classes\Steam\MacRequirements.cs" />
+    <Compile Include="Classes\Steam\Movy.cs" />
+    <Compile Include="Classes\Steam\Mp4.cs" />
+    <Compile Include="Classes\Steam\PackageGroup.cs" />
+    <Compile Include="Classes\Steam\PcRequirements.cs" />
+    <Compile Include="Classes\Steam\Platforms.cs" />
+    <Compile Include="Classes\Steam\PriceOverview.cs" />
+    <Compile Include="Classes\Steam\ReleaseDate.cs" />
+    <Compile Include="Classes\Steam\Screenshot.cs" />
+    <Compile Include="Classes\Steam\SteamData.cs" />
+    <Compile Include="Classes\Steam\Sub.cs" />
+    <Compile Include="Classes\Steam\SupportInfo.cs" />
+    <Compile Include="Classes\Steam\Webm.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
