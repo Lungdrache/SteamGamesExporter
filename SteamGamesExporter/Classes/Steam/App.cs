@@ -19,24 +19,27 @@ namespace SteamGamesExporter.Classes
         public void FilterList()
         {
             List<App> appsToRemove = new List<App>();
+
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("  Filter Gamelist: (Searching for invalid Names)");
             for (int i = 0; i < apps.Count; i++)
             {
-                Console.Clear();
-                Console.WriteLine();
-                Console.WriteLine("  Filter Gamelist: (Searching for invalid Names)");
-                Console.WriteLine("  Fortschritt: " + i + "|" + apps.Count);
+                Console.SetCursorPosition(0, 2);
+                Console.WriteLine("  Fortschritt: " + i + "|" + apps.Count + " " + Math.Round((float)i/((float)apps.Count/100)) + "%");
 
                 if (Regex.IsMatch(apps[i].name, "[^A-Za-z^0-9^-^_^/^\"]"))
                 {
                     appsToRemove.Add(apps[i]);
                 }
             }
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("  Filter Gamelist: (Removing Invalid Names)");
             for (int i = 0; i < appsToRemove.Count; i++)
             {
-                Console.Clear();
-                Console.WriteLine();
-                Console.WriteLine("  Filter Gamelist: (Removing Invalid Names)");
-                Console.WriteLine("  Fortschritt: " + i + "|" + apps.Count);
+                Console.SetCursorPosition(0, 2);
+                Console.WriteLine("  Fortschritt: " + i + "|" + appsToRemove.Count + " " + Math.Round((float)i / ((float)appsToRemove.Count / 100)) + "%");
                 apps.Remove(appsToRemove[i]);
             }
             appsToRemove.Clear();
