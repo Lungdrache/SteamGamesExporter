@@ -25,25 +25,40 @@ namespace SteamGamesExporter
         {
             // the selected Json File
             string jsonFile = "";
+            string filePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "Gamelist.json";
 
-            DialogResult result = MessageBox.Show("Do you want to import a Steam json file? else we download a new one.", "Download or Import", MessageBoxButtons.YesNo);
-            switch (result)
+            if (File.Exists(filePath))
             {
-                case DialogResult.Yes:
-                    // open FileDialog to search for the Steam Json File
-                    jsonFile = OpenFileExplorer("JSON-File (*.json)|*.json");
-                    break;
-                case DialogResult.No:
-                    jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
-                    break;
-                default:
-                    break;
+                DialogResult result = MessageBox.Show("Do you want to download a new gamelist?", "Download or Import", MessageBoxButtons.YesNo);
+                switch (result)
+                {
+                    case DialogResult.Yes:
+                        // open FileDialog to search for the Steam Json File
+                        jsonFile = File.ReadAllText(filePath);
+                        break;
+                    case DialogResult.No:
+                        jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
+                        File.Delete(filePath);
+                        break;
+                    default:
+                        break;
+                }
             }
-
-
+            else
+            {
+                using (StreamWriter sw = File.AppendText(filePath))
+                {
+                    sw.Write(jsonFile);
+                    sw.Flush();
+                    sw.Close();
+                }
+            }
             // Converts the Json to a Elementslist
             allapps = JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
             allapps.FilterList();
+
+
+
             SelectionMenu();
         }
 
