@@ -246,6 +246,16 @@ namespace SteamGamesExporter
                 Console.WriteLine((selectedApp.movies != null) ? " Trailers:" + selectedApp.movies.Count : " No Trailers");
                 Console.WriteLine((selectedApp.screenshots != null) ? " Screenshots:" + selectedApp.screenshots.Count : " No Screenshots");
                 Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Cost: " + selectedApp.price_overview.final_formatted.Replace("€"," EUR"));
+                if (selectedApp.publishers.Count > 0)
+                {
+                    Console.WriteLine(" Publisher:");
+                    foreach (string company in selectedApp.publishers)
+                    {
+                        Console.WriteLine("       " + company);
+                    }
+
+                }
+                Console.WriteLine("                                 ");
                 Console.WriteLine((cursorHeight == 0) ? ">Show screenshots<" : " Show screenshots");
                 Console.WriteLine((cursorHeight == 1) ? ">Show trailer<" : " Show trailer");
                 Console.WriteLine((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
