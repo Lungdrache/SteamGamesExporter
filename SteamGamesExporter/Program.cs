@@ -26,20 +26,57 @@ namespace SteamGamesExporter
         {
             // the selected Json File
             string jsonFile = "";
+            string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string filePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/Gamelist.json";
 
-            if (File.Exists(filePath))
+            if (File.Exists(programmPath + "/filteredList.txt"))
             {
                 DialogResult result = MessageBox.Show("Do you want to download a new gamelist?", "Download or Import", MessageBoxButtons.YesNo);
                 switch (result)
                 {
                     case DialogResult.No:
-                        // open FileDialog to search for the Steam Json File
-                        jsonFile = File.ReadAllText(filePath);
+
+                        string[] allFilteredFiles = File.ReadAllLines(programmPath + "/filteredList.txt");
+
+                        Console.Clear();
+                        Console.WriteLine();
+                        Console.WriteLine("  Load old Gamelist: ");
+                        allapps = new Applist(){ apps = new List<App>()};
+
+                        for (int i = 0; i < allFilteredFiles.Length; i++)
+                        {
+
+                            Console.SetCursorPosition(0, 2);
+                            Console.WriteLine("  Progress: " + i + "|" + allFilteredFiles.Length + " " + Math.Round((float)i / ((float)allFilteredFiles.Length / 100)) + "%");
+
+
+                            string[] textpart = allFilteredFiles[i].Split(',');
+                            allapps.apps.Add(new App() { appid = int.Parse(textpart[0]), name = textpart[1] });
+                        }
                         break;
                     case DialogResult.Yes:
                         jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
                         File.Delete(filePath);
+                        File.Delete(programmPath + "/filteredList.txt");
+                        using (StreamWriter sw = File.AppendText(filePath))
+                        {
+                            sw.Write(jsonFile);
+                            sw.Flush();
+                            sw.Close();
+                        }
+                        // Converts the Json to a Elementslist
+                        allapps = JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
+
+                        allapps.FilterList();
+                        using (StreamWriter sw = File.AppendText(programmPath + "/filteredList.txt"))
+                        {
+                            foreach (App app in allapps.apps)
+                            {
+                                sw.WriteLine(app.appid + "," + app.name);
+                            }
+                            sw.Flush();
+                            sw.Close();
+                        }
                         break;
                     default:
                         break;
@@ -47,6 +84,10 @@ namespace SteamGamesExporter
             }
             else
             {
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
                 jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
                 using (StreamWriter sw = File.AppendText(filePath))
                 {
@@ -54,11 +95,20 @@ namespace SteamGamesExporter
                     sw.Flush();
                     sw.Close();
                 }
-            }
-            // Converts the Json to a Elementslist
-            allapps = JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
+                // Converts the Json to a Elementslist
+                allapps = JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
 
-            allapps.FilterList();
+                allapps.FilterList();
+                using (StreamWriter sw = File.AppendText(programmPath + "/filteredList.txt"))
+                {
+                    foreach (App app in allapps.apps)
+                    {
+                        sw.WriteLine(app.appid + "," + app.name);
+                    }
+                    sw.Flush();
+                    sw.Close();
+                }
+            }
 
 
 
@@ -246,7 +296,7 @@ namespace SteamGamesExporter
                 Console.WriteLine(" " + gameName);
                 Console.WriteLine((selectedApp.movies != null) ? " Trailers:" + selectedApp.movies.Count : " No Trailers");
                 Console.WriteLine((selectedApp.screenshots != null) ? " Screenshots:" + selectedApp.screenshots.Count : " No Screenshots");
-                Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Cost: " + selectedApp.price_overview.final_formatted.Replace("€"," EUR"));
+                Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Released since: " + selectedApp.release_date.date);
                 if (selectedApp.publishers.Count > 0)
                 {
                     Console.WriteLine(" Publisher:");
