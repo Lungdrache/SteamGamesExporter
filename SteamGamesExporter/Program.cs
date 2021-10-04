@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -96,7 +97,8 @@ namespace SteamGamesExporter
             do
             {
                 ConsoleKeyInfo pressed = Console.ReadKey();
-
+                SteamData currentlySelectedApp = detailedAppList[pageNumber];
+                
                 switch (pressed.Key)
                 {
                     case (ConsoleKey.LeftArrow):
@@ -109,11 +111,17 @@ namespace SteamGamesExporter
                         break;
                     case (ConsoleKey.DownArrow):
                         // goes a menu button down
-                        cursorHeight = (cursorHeight < 5) ? cursorHeight+1 : 0;
+                        if (currentlySelectedApp != null && currentlySelectedApp.name != null)
+                        {
+                            cursorHeight = (cursorHeight < 5) ? cursorHeight + 1 : 0;
+                        }
                         break;
                     case (ConsoleKey.UpArrow):
                         // goes a menu button up
-                        cursorHeight = (cursorHeight > 0) ? cursorHeight-1 : 5;
+                        if (currentlySelectedApp != null && currentlySelectedApp.name != null)
+                        {
+                            cursorHeight = (cursorHeight > 0) ? cursorHeight - 1 : 5;
+                        }
                         break;
                     case (ConsoleKey.Spacebar):
                         // Menu:
@@ -124,7 +132,57 @@ namespace SteamGamesExporter
                         // 4 Export this game
                         // 5 Export all marked gamefiles
                         // select the button
-                        
+                        if (currentlySelectedApp != null && currentlySelectedApp.name != null)
+                        {
+                            if (cursorHeight == 0 && currentlySelectedApp.screenshots.Count != 0)
+                            {
+                                foreach (Screenshot path in currentlySelectedApp.screenshots)
+                                {
+                                    Process.Start(path.path_full);
+                                }
+                            }
+                            else if (cursorHeight == 1 && currentlySelectedApp.movies.Count != 0)
+                            {
+                                foreach (Movy path in currentlySelectedApp.movies)
+                                {
+                                    if (string.IsNullOrWhiteSpace(path.webm._480))
+                                    {
+                                        if (string.IsNullOrWhiteSpace(path.webm.max))
+                                        {
+
+                                            if (string.IsNullOrWhiteSpace(path.mp4._480))
+                                            {
+
+                                                if (string.IsNullOrWhiteSpace(path.mp4.max))
+                                                {
+
+                                                }
+                                                else
+                                                {
+                                                    Process.Start(path.mp4.max);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Process.Start(path.mp4._480);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Process.Start(path.webm.max);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Process.Start(path.webm._480);
+                                    }
+                                }
+                            }
+                            else if (cursorHeight == 3)
+                            {
+                                Process.Start(newDetailLink);
+                            }
+                        }
                         break;
                     default:
                         break;
@@ -178,21 +236,22 @@ namespace SteamGamesExporter
             if (selectedApp != null && selectedApp.name != null)
             {
 
-            string gameName = selectedApp.name;
-            if (gameName.Length > 31)
-            {
-                gameName = gameName.Remove(30) + ".";
-            }
+                string gameName = selectedApp.name;
+                if (gameName.Length > 31)
+                {
+                    gameName = gameName.Remove(30) + ".";
+                }
 
-            Console.WriteLine(" " + gameName);
-            Console.WriteLine((selectedApp.movies != null)? " Trailers:" + selectedApp.movies.Count:" No Trailers");
-            Console.WriteLine((selectedApp.screenshots != null)? " Screenshots:" + selectedApp.screenshots.Count: " No Screenshots");
-            Console.WriteLine((cursorHeight == 0) ? ">Show screenshots" : " Show screenshots") ;
-            Console.WriteLine((cursorHeight == 1) ? ">Show trailer" : " Show trailer") ;
-            Console.WriteLine((cursorHeight == 2) ? ">Mark for export" : " Mark for export") ;
-            Console.WriteLine((cursorHeight == 3) ? ">Show all details" : " Show all details") ;
-            Console.WriteLine((cursorHeight == 4) ? ">Export this game" : " Export this game") ;
-            Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles" : " Export all marked gamefiles") ;
+                Console.WriteLine(" " + gameName);
+                Console.WriteLine((selectedApp.movies != null) ? " Trailers:" + selectedApp.movies.Count : " No Trailers");
+                Console.WriteLine((selectedApp.screenshots != null) ? " Screenshots:" + selectedApp.screenshots.Count : " No Screenshots");
+                Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Cost: " + selectedApp.price_overview.final_formatted.Replace("€"," EUR"));
+                Console.WriteLine((cursorHeight == 0) ? ">Show screenshots<" : " Show screenshots");
+                Console.WriteLine((cursorHeight == 1) ? ">Show trailer<" : " Show trailer");
+                Console.WriteLine((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
+                Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
+                Console.WriteLine((cursorHeight == 4) ? ">Export this game<" : " Export this game");
+                Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles<" : " Export all marked gamefiles");
 
             }
             else
