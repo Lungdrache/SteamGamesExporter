@@ -52,6 +52,7 @@
     <Compile Include="Classes\Steam\Category.cs" />
     <Compile Include="Classes\Steam\ContentDescriptors.cs" />
     <Compile Include="Classes\Steam\DetailView.cs" />
+    <Compile Include="Classes\Steam\Fullgame.cs" />
     <Compile Include="Classes\Steam\Genre.cs" />
     <Compile Include="Classes\Steam\LinuxRequirements.cs" />
     <Compile Include="Classes\Steam\MacRequirements.cs" />
