@@ -226,16 +226,17 @@ namespace SteamGamesExporter
             SteamData selectedApp = detailedAppList[selectedPage];
             Console.Clear();
             Console.WriteLine("                                 ");
+            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" <- Page: ");
 
             string spaceAfterPage = "                    ";
             spaceAfterPage = spaceAfterPage.Remove(spaceAfterPage.Length - selectedPage.ToString().Length);
 
             Console.WriteLine(selectedPage + spaceAfterPage +"-> ");
-            //31
+
             if (selectedApp != null && selectedApp.name != null)
             {
-
+                Console.ForegroundColor = ConsoleColor.White;
                 string gameName = selectedApp.name;
                 if (gameName.Length > 31)
                 {
@@ -256,17 +257,43 @@ namespace SteamGamesExporter
 
                 }
                 Console.WriteLine("                                 ");
-                Console.WriteLine((cursorHeight == 0) ? ">Show screenshots<" : " Show screenshots");
-                Console.WriteLine((cursorHeight == 1) ? ">Show trailer<" : " Show trailer");
+
+                if (selectedApp.screenshots.Count == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine((cursorHeight == 0) ? ">No screenshots<" : " No screenshots");
+                }
+                else
+                {
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine((cursorHeight == 0) ? ">Show screenshots<" : " Show screenshots");
+                }
+                if (selectedApp.movies.Count == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkGray;
+                    Console.WriteLine((cursorHeight == 1) ? ">No trailer<" : " No trailer");
+                }
+                else
+                {
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine((cursorHeight == 1) ? ">Show trailer<" : " Show trailer");
+                }
+                Console.ForegroundColor = ConsoleColor.White;
+
                 Console.WriteLine((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
                 Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
                 Console.WriteLine((cursorHeight == 4) ? ">Export this game<" : " Export this game");
                 Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles<" : " Export all marked gamefiles");
 
+                Console.ResetColor();
+
             }
             else
             {
-                Console.WriteLine(" No Existing Game Found");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(" Game is Invalid");
             }
 
 
