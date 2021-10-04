@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -18,8 +19,20 @@ namespace SteamGamesExporter
             // the selected Json File
             string jsonFile = "";
 
-            // open FileDialog to search for the Steam Json File
-            jsonFile = OpenFileExplorer("JSON-File (*.json)|*.json");
+            DialogResult result = MessageBox.Show("Do you want to import a Steam json file? else we download a new one.", "Download or Import", MessageBoxButtons.YesNo);
+            switch (result)
+            {
+                case DialogResult.Yes:
+                    // open FileDialog to search for the Steam Json File
+                    jsonFile = OpenFileExplorer("JSON-File (*.json)|*.json");
+                    break;
+                case DialogResult.No:
+                    jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
+                    break;
+                default:
+                    break;
+            }
+
 
             // Converts the Json to a Elementslist
             Applist list =
@@ -33,6 +46,14 @@ namespace SteamGamesExporter
 
         }
 
+        static async Task<string> GetJsonHttpRequest(string link)
+        {
+            HttpClient client = new HttpClient();
+            HttpResponseMessage response = await client.GetAsync(link);
+            response.EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+            return responseBody;
+        }
 
         // is used as simple FIleDialog Solution to start it whenever needed
         static string OpenFileExplorer(string filter,string startFolder = "c:\\")
