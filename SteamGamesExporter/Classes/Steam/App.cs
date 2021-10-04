@@ -19,16 +19,25 @@ namespace SteamGamesExporter.Classes
         public void FilterList()
         {
             List<App> appsToRemove = new List<App>();
-            foreach (App item in apps)
+            for (int i = 0; i < apps.Count; i++)
             {
-                if (Regex.IsMatch(item.name,"[^A-Za-z^0-9^-^_^/^\"]"))
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("  Filter Gamelist: (Searching for invalid Names)");
+                Console.WriteLine("  Fortschritt: " + i + "|" + apps.Count);
+
+                if (Regex.IsMatch(apps[i].name, "[^A-Za-z^0-9^-^_^/^\"]"))
                 {
-                    appsToRemove.Add(item);
+                    appsToRemove.Add(apps[i]);
                 }
             }
-            foreach (App item in appsToRemove)
+            for (int i = 0; i < appsToRemove.Count; i++)
             {
-                apps.Remove(item);
+                Console.Clear();
+                Console.WriteLine();
+                Console.WriteLine("  Filter Gamelist: (Removing Invalid Names)");
+                Console.WriteLine("  Fortschritt: " + i + "|" + apps.Count);
+                apps.Remove(appsToRemove[i]);
             }
             appsToRemove.Clear();
         }

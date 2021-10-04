@@ -25,18 +25,18 @@ namespace SteamGamesExporter
         {
             // the selected Json File
             string jsonFile = "";
-            string filePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "Gamelist.json";
+            string filePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/Gamelist.json";
 
             if (File.Exists(filePath))
             {
                 DialogResult result = MessageBox.Show("Do you want to download a new gamelist?", "Download or Import", MessageBoxButtons.YesNo);
                 switch (result)
                 {
-                    case DialogResult.Yes:
+                    case DialogResult.No:
                         // open FileDialog to search for the Steam Json File
                         jsonFile = File.ReadAllText(filePath);
                         break;
-                    case DialogResult.No:
+                    case DialogResult.Yes:
                         jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
                         File.Delete(filePath);
                         break;
@@ -46,6 +46,7 @@ namespace SteamGamesExporter
             }
             else
             {
+                jsonFile = GetJsonHttpRequest("https://api.steampowered.com/ISteamApps/GetAppList/v2/").Result;
                 using (StreamWriter sw = File.AppendText(filePath))
                 {
                     sw.Write(jsonFile);
@@ -55,6 +56,7 @@ namespace SteamGamesExporter
             }
             // Converts the Json to a Elementslist
             allapps = JsonConvert.DeserializeObject<AllApps>(jsonFile).applist;
+
             allapps.FilterList();
 
 
