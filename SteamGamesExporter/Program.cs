@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -291,12 +292,72 @@ namespace SteamGamesExporter
 
         public static void ExportApp(SteamData data)
         {
+            string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            // folder where all Images will be saved
+            string imageFolder = programmPath + "/AssetFiles";
+            // folder where all Files will be saved
+            string fileFolder = programmPath + "/dataOutput";
+
+            Directory.CreateDirectory(imageFolder);
+            Directory.CreateDirectory(fileFolder);
+
+
+            using (WebClient client = new WebClient())
+            {
+                client.DownloadFileAsync(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
+                foreach (Screenshot photo in data.screenshots)
+                {
+                    client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + data.name + "/" + photo.id + ".png");
+                }
+                foreach (Movy path in data.movies)
+                {
+
+                    if (string.IsNullOrWhiteSpace(path.webm._480))
+                    {
+                        if (string.IsNullOrWhiteSpace(path.webm.max))
+                        {
+
+                            if (string.IsNullOrWhiteSpace(path.mp4._480))
+                            {
+
+                                if (string.IsNullOrWhiteSpace(path.mp4.max))
+                                {
+
+                                }
+                                else
+                                {
+                                    client.DownloadFileAsync(new Uri(path.mp4.max), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                }
+                            }
+                            else
+                            {
+                                client.DownloadFileAsync(new Uri(path.mp4._480), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                            }
+                        }
+                        else
+                        {
+                            client.DownloadFileAsync(new Uri(path.webm.max), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
+                        }
+                    }
+                    else
+                    {
+                        client.DownloadFileAsync(new Uri(path.webm._480), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
+                    }
+                }
+
+            }
+
+
+
+
+
             //data.name;
             //data.price_overview.initial;
             //data.header_image;
             //data.short_description;
             //data.publishers[0];
             //data.genres[0];
+
 
 
 
@@ -316,11 +377,11 @@ namespace SteamGamesExporter
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" <- Page: ");
 
-            string spaceAfterPage = "           ";
+            string spaceAfterPage = "          ";
             spaceAfterPage = spaceAfterPage.Remove(spaceAfterPage.Length - selectedPage.ToString().Length);
             spaceAfterPage = spaceAfterPage.Remove(spaceAfterPage.Length - markedForExport.Count.ToString().Length);
 
-            Console.WriteLine(selectedPage + spaceAfterPage + "Marked:" + markedForExport.Count +" -> ");
+            Console.WriteLine(selectedPage + spaceAfterPage + " Marked:" + markedForExport.Count +" -> ");
 
             if (selectedApp != null && selectedApp.name != null)
             {
