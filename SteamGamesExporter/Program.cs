@@ -244,6 +244,11 @@ namespace SteamGamesExporter
                             {
                                 Process.Start(newDetailLink);
                             }
+                            else if (cursorHeight == 5)
+                            {
+
+                            }
+
                         }
                         break;
                     default:
@@ -283,6 +288,26 @@ namespace SteamGamesExporter
 
 
         }
+
+        public static void ExportApp(SteamData data)
+        {
+            //data.name;
+            //data.price_overview.initial;
+            //data.header_image;
+            //data.short_description;
+            //data.publishers[0];
+            //data.genres[0];
+
+
+
+            // ProductName
+            // NetUnitPrice
+            // ImagePath
+            // Description
+            // ManufacturerName
+            // CategoryName
+            // Tax 19 %
+        }
         public static void ReloadSelectionMenu(int selectedPage, int cursorHeight)
         {
             SteamData selectedApp = detailedAppList[selectedPage];
@@ -291,10 +316,11 @@ namespace SteamGamesExporter
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write(" <- Page: ");
 
-            string spaceAfterPage = "                    ";
+            string spaceAfterPage = "           ";
             spaceAfterPage = spaceAfterPage.Remove(spaceAfterPage.Length - selectedPage.ToString().Length);
+            spaceAfterPage = spaceAfterPage.Remove(spaceAfterPage.Length - markedForExport.Count.ToString().Length);
 
-            Console.WriteLine(selectedPage + spaceAfterPage +"-> ");
+            Console.WriteLine(selectedPage + spaceAfterPage + "Marked:" + markedForExport.Count +" -> ");
 
             if (selectedApp != null && selectedApp.name != null)
             {
@@ -309,7 +335,8 @@ namespace SteamGamesExporter
                 Console.WriteLine((selectedApp.movies != null) ? " Trailers:" + selectedApp.movies.Count : " No Trailers");
                 Console.WriteLine((selectedApp.screenshots != null) ? " Screenshots:" + selectedApp.screenshots.Count : " No Screenshots");
                 Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Released since: " + selectedApp.release_date.date);
-                Console.WriteLine((selectedApp.price_overview.final_formatted != null) ? " " + selectedApp.price_overview.final_formatted.Replace("€", " EUR"): " No price avaible");
+                Console.WriteLine((selectedApp.price_overview != null) ? " " + selectedApp.price_overview.final_formatted.Replace("€", " EUR"): 
+                                 /* if the Game is not out but it's free */(selectedApp.release_date.coming_soon)?" No Prize avaible":" Free");
                 if (selectedApp.publishers.Count > 0)
                 {
                     Console.WriteLine(" Publisher:");
