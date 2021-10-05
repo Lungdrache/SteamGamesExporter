@@ -186,14 +186,14 @@ namespace SteamGamesExporter
                         // select the button
                         if (currentlySelectedApp != null && currentlySelectedApp.name != null)
                         {
-                            if (cursorHeight == 0 && currentlySelectedApp.screenshots.Count != 0)
+                            if (cursorHeight == 0 && currentlySelectedApp.screenshots != null)
                             {
                                 foreach (Screenshot path in currentlySelectedApp.screenshots)
                                 {
                                     Process.Start(path.path_full);
                                 }
                             }
-                            else if (cursorHeight == 1 && currentlySelectedApp.movies.Count != 0)
+                            else if (cursorHeight == 1 && currentlySelectedApp.movies != null)
                             {
                                 foreach (Movy path in currentlySelectedApp.movies)
                                 {
@@ -245,9 +245,13 @@ namespace SteamGamesExporter
                             {
                                 Process.Start(newDetailLink);
                             }
+                            else if (cursorHeight == 4)
+                            {
+                                ExportApp(currentlySelectedApp);
+                            }
                             else if (cursorHeight == 5)
                             {
-
+                                ExportAllMarkedApps();
                             }
 
                         }
@@ -290,6 +294,21 @@ namespace SteamGamesExporter
 
         }
 
+        public static void ExportAllMarkedApps()
+        {
+            Console.Clear();
+            Console.WriteLine();
+            Console.WriteLine("  Filter Gamelist: (Searching for invalid Names)");
+            for (int i = 0; i < markedForExport.Count; i++)
+            {
+                Console.SetCursorPosition(0, 2);
+                Console.WriteLine("  Fortschritt: " + i + "|" + markedForExport.Count + " " + Math.Round((float)i / ((float)markedForExport.Count / 100)) + "%");
+                ExportApp(detailedAppList[markedForExport[i]]);
+            }
+            markedForExport.Clear();
+        }
+
+
         public static void ExportApp(SteamData data)
         {
             string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
@@ -297,18 +316,38 @@ namespace SteamGamesExporter
             string imageFolder = programmPath + "/AssetFiles";
             // folder where all Files will be saved
             string fileFolder = programmPath + "/dataOutput";
-
+            // Loading Bar
+            Console.SetCursorPosition(0, 3);
+            Console.WriteLine(" |oooooooooo|");
+            Console.SetCursorPosition(2, 3);
+            Console.ForegroundColor = ConsoleColor.Green;
             Directory.CreateDirectory(imageFolder);
             Directory.CreateDirectory(fileFolder);
 
+            // if the files exists they delete it to update all files
+            if (Directory.Exists(imageFolder + "/" + data.name))
+            {
+                Directory.Delete(imageFolder + "/" + data.name);
+            }
+            if (File.Exists(fileFolder + "/" + data.name + ".txt"))
+            {
+                File.Delete(fileFolder + "/" + data.name + ".txt");
+            }
+
+            // Loading Progress 10%
+            Console.Write("o");
 
             using (WebClient client = new WebClient())
             {
                 client.DownloadFileAsync(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
+                // Loading Progress 20%
+                Console.Write("o");
                 foreach (Screenshot photo in data.screenshots)
                 {
                     client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + data.name + "/" + photo.id + ".png");
                 }
+                // Loading Progress 30%
+                Console.Write("o");
                 foreach (Movy path in data.movies)
                 {
 
@@ -344,9 +383,99 @@ namespace SteamGamesExporter
                         client.DownloadFileAsync(new Uri(path.webm._480), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
                     }
                 }
+                // Loading Progress 40%
+                Console.Write("o");
 
             }
 
+            // Loading Progress 50%
+            Console.Write("o");
+
+            using (StreamWriter sw = File.AppendText(fileFolder + "/" + data.name + ".txt"))
+            {
+
+                //data.name;
+                //data.price_overview.initial;
+                //data.header_image;
+                //data.short_description;
+                //data.publishers[0];
+                //data.genres[0];
+                sw.WriteLine(data.name);
+
+                if (data.price_overview == null)
+                {
+                    if (data.release_date.coming_soon)
+                    {
+                        sw.WriteLine("NoPrice");
+                    }
+                    else
+                    {
+                        sw.WriteLine("Free");
+                    }
+                }
+                else
+                {
+                    sw.WriteLine(data.price_overview.final_formatted.Replace("€", ""));
+                }
+
+                sw.WriteLine(data.short_description);
+                sw.WriteLine(data.publishers[0]);
+                sw.WriteLine(data.genres[0].description);
+                sw.WriteLine("19"); // Taxrate
+
+                // Loading Progress 60%
+                Console.Write("o");
+                foreach (Screenshot photo in data.screenshots)
+                {
+                    sw.Write("/" + data.name + "/" + photo.id + ".png|");
+                }
+                sw.WriteLine();
+                // Loading Progress 70%
+                Console.Write("o");
+                foreach (Movy movie in data.movies)
+                {
+                    if (string.IsNullOrWhiteSpace(movie.webm._480))
+                    {
+                        if (string.IsNullOrWhiteSpace(movie.webm.max))
+                        {
+
+                            if (string.IsNullOrWhiteSpace(movie.mp4._480))
+                            {
+
+                                if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                {
+
+                                }
+                                else
+                                {
+                                    sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                                }
+                            }
+                            else
+                            {
+                                sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                            }
+                        }
+                        else
+                        {
+                            sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
+                        }
+                    }
+                    else
+                    {
+                        sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
+                    }
+                }
+                // Loading Progress 80%
+                Console.Write("o");
+                sw.WriteLine();
+
+            }
+            // Loading Progress 90%
+            Console.Write("o");
+            // Loading Progress 100%
+            Console.Write("o");
+            Console.ResetColor();
 
 
 
@@ -409,7 +538,7 @@ namespace SteamGamesExporter
                 }
                 Console.WriteLine("                                 ");
 
-                if (selectedApp.screenshots.Count == 0)
+                if (selectedApp.screenshots == null)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine((cursorHeight == 0) ? ">No screenshots<" : " No screenshots");
@@ -420,7 +549,7 @@ namespace SteamGamesExporter
                     Console.ForegroundColor = ConsoleColor.White;
                     Console.WriteLine((cursorHeight == 0) ? ">Show screenshots<" : " Show screenshots");
                 }
-                if (selectedApp.movies.Count == 0)
+                if ( selectedApp.movies == null)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
                     Console.WriteLine((cursorHeight == 1) ? ">No trailer<" : " No trailer");
