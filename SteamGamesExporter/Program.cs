@@ -309,6 +309,7 @@ namespace SteamGamesExporter
                 Console.WriteLine((selectedApp.movies != null) ? " Trailers:" + selectedApp.movies.Count : " No Trailers");
                 Console.WriteLine((selectedApp.screenshots != null) ? " Screenshots:" + selectedApp.screenshots.Count : " No Screenshots");
                 Console.WriteLine((selectedApp.release_date.coming_soon) ? " Not Out Yet" : " Released since: " + selectedApp.release_date.date);
+                Console.WriteLine((selectedApp.price_overview.final_formatted != null) ? " " + selectedApp.price_overview.final_formatted.Replace("€", " EUR"): " No price avaible");
                 if (selectedApp.publishers.Count > 0)
                 {
                     Console.WriteLine(" Publisher:");
@@ -354,6 +355,7 @@ namespace SteamGamesExporter
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(" Not Recomended for Export");
                 }
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.Write((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
                 Console.WriteLine((markedForExport.Contains(selectedPage) ? " (Marked)" : " (Not Marked)"));
                 Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
