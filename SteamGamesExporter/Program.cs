@@ -296,6 +296,19 @@ namespace SteamGamesExporter
 
         public static void ExportAllMarkedApps()
         {
+            DialogResult result = MessageBox.Show("Do you want to include the Movie File?", "File or Path", MessageBoxButtons.YesNo);
+
+            bool includeMovieFile = false;
+
+            switch (result)
+            {
+                case DialogResult.Yes:
+                    includeMovieFile = true;
+                    break;
+                default:
+                    break;
+            }
+
             Console.Clear();
             Console.WriteLine();
             Console.WriteLine("  Filter Gamelist: (Searching for invalid Names)");
@@ -303,14 +316,15 @@ namespace SteamGamesExporter
             {
                 Console.SetCursorPosition(0, 2);
                 Console.WriteLine("  Fortschritt: " + i + "|" + markedForExport.Count + " " + Math.Round((float)i / ((float)markedForExport.Count / 100)) + "%");
-                ExportApp(detailedAppList[markedForExport[i]]);
+                ExportApp(detailedAppList[markedForExport[i]], includeMovieFile);
             }
             markedForExport.Clear();
         }
 
 
-        public static void ExportApp(SteamData data)
+        public static void ExportApp(SteamData data, bool includeMovieFile = true)
         {
+            Console.Clear();
             string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             // folder where all Images will be saved
             string imageFolder = programmPath + "/AssetFiles";
@@ -327,19 +341,21 @@ namespace SteamGamesExporter
             // if the files exists they delete it to update all files
             if (Directory.Exists(imageFolder + "/" + data.name))
             {
-                Directory.Delete(imageFolder + "/" + data.name);
+                Directory.Delete(imageFolder + "/" + data.name,true);
             }
             if (File.Exists(fileFolder + "/" + data.name + ".txt"))
             {
                 File.Delete(fileFolder + "/" + data.name + ".txt");
             }
 
+            Directory.CreateDirectory(imageFolder + "/" + data.name);
+
             // Loading Progress 10%
             Console.Write("o");
 
             using (WebClient client = new WebClient())
             {
-                client.DownloadFileAsync(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
+                client.DownloadFile(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
                 // Loading Progress 20%
                 Console.Write("o");
                 foreach (Screenshot photo in data.screenshots)
@@ -348,39 +364,42 @@ namespace SteamGamesExporter
                 }
                 // Loading Progress 30%
                 Console.Write("o");
-                foreach (Movy path in data.movies)
+                if (includeMovieFile)
                 {
-
-                    if (string.IsNullOrWhiteSpace(path.webm._480))
+                    foreach (Movy path in data.movies)
                     {
-                        if (string.IsNullOrWhiteSpace(path.webm.max))
-                        {
 
-                            if (string.IsNullOrWhiteSpace(path.mp4._480))
+                        if (string.IsNullOrWhiteSpace(path.webm._480))
+                        {
+                            if (string.IsNullOrWhiteSpace(path.webm.max))
                             {
 
-                                if (string.IsNullOrWhiteSpace(path.mp4.max))
+                                if (string.IsNullOrWhiteSpace(path.mp4._480))
                                 {
 
+                                    if (string.IsNullOrWhiteSpace(path.mp4.max))
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        client.DownloadFile(new Uri(path.mp4.max), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                    }
                                 }
                                 else
                                 {
-                                    client.DownloadFileAsync(new Uri(path.mp4.max), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                    client.DownloadFile(new Uri(path.mp4._480), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
                                 }
                             }
                             else
                             {
-                                client.DownloadFileAsync(new Uri(path.mp4._480), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                client.DownloadFile(new Uri(path.webm.max), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
                             }
                         }
                         else
                         {
-                            client.DownloadFileAsync(new Uri(path.webm.max), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
+                            client.DownloadFile(new Uri(path.webm._480), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
                         }
-                    }
-                    else
-                    {
-                        client.DownloadFileAsync(new Uri(path.webm._480), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
                     }
                 }
                 // Loading Progress 40%
@@ -432,19 +451,27 @@ namespace SteamGamesExporter
                 sw.WriteLine();
                 // Loading Progress 70%
                 Console.Write("o");
-                foreach (Movy movie in data.movies)
+                if (includeMovieFile)
                 {
-                    if (string.IsNullOrWhiteSpace(movie.webm._480))
-                    {
-                        if (string.IsNullOrWhiteSpace(movie.webm.max))
-                        {
 
-                            if (string.IsNullOrWhiteSpace(movie.mp4._480))
+                    foreach (Movy movie in data.movies)
+                    {
+                        if (string.IsNullOrWhiteSpace(movie.webm._480))
+                        {
+                            if (string.IsNullOrWhiteSpace(movie.webm.max))
                             {
 
-                                if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                if (string.IsNullOrWhiteSpace(movie.mp4._480))
                                 {
 
+                                    if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                                    }
                                 }
                                 else
                                 {
@@ -453,7 +480,7 @@ namespace SteamGamesExporter
                             }
                             else
                             {
-                                sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                                sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
                             }
                         }
                         else
@@ -461,9 +488,43 @@ namespace SteamGamesExporter
                             sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
                         }
                     }
-                    else
+                }
+                else
+                {
+
+                    foreach (Movy movie in data.movies)
                     {
-                        sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
+                        if (string.IsNullOrWhiteSpace(movie.webm._480))
+                        {
+                            if (string.IsNullOrWhiteSpace(movie.webm.max))
+                            {
+
+                                if (string.IsNullOrWhiteSpace(movie.mp4._480))
+                                {
+
+                                    if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                    {
+
+                                    }
+                                    else
+                                    {
+                                        sw.Write( movie.mp4.max + "|");
+                                    }
+                                }
+                                else
+                                {
+                                    sw.Write(movie.mp4._480 + "|");
+                                }
+                            }
+                            else
+                            {
+                                sw.Write(movie.webm.max + "|");
+                            }
+                        }
+                        else
+                        {
+                            sw.Write(movie.webm._480 + "|");
+                        }
                     }
                 }
                 // Loading Progress 80%
