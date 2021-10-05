@@ -165,14 +165,14 @@ namespace SteamGamesExporter
                         // goes a menu button down
                         if (currentlySelectedApp != null && currentlySelectedApp.name != null)
                         {
-                            cursorHeight = (cursorHeight < 5) ? cursorHeight + 1 : 0;
+                            cursorHeight = (cursorHeight < 7) ? cursorHeight + 1 : 0;
                         }
                         break;
                     case (ConsoleKey.UpArrow):
                         // goes a menu button up
                         if (currentlySelectedApp != null && currentlySelectedApp.name != null)
                         {
-                            cursorHeight = (cursorHeight > 0) ? cursorHeight - 1 : 5;
+                            cursorHeight = (cursorHeight > 0) ? cursorHeight - 1 : 7;
                         }
                         break;
                     case (ConsoleKey.Spacebar):
@@ -183,6 +183,9 @@ namespace SteamGamesExporter
                         // 3 Show all details
                         // 4 Export this game
                         // 5 Export all marked gamefiles
+                        // 6 Jump to Position
+                        // 7 Open Steam page
+                        
                         // select the button
                         if (currentlySelectedApp != null && currentlySelectedApp.name != null)
                         {
@@ -253,6 +256,22 @@ namespace SteamGamesExporter
                             {
                                 ExportAllMarkedApps();
                             }
+                            else if (cursorHeight == 6)
+                            {
+                                Console.Clear();
+                                Console.WriteLine();
+                                Console.WriteLine("0-" + allapps.apps.Count);
+                                Console.Write("Where do you wanna go?:");
+                                string result = Console.ReadLine();
+                                if (int.TryParse(result, out int parsed))
+                                {
+                                    pageNumber = parsed;
+                                }
+                            }
+                            else if (cursorHeight == 7)
+                            {
+                                Process.Start("https://store.steampowered.com/app/" + allapps.apps[pageNumber].appid.ToString() + "/" + currentlySelectedApp.name + "/");
+                            }
 
                         }
                         break;
@@ -262,11 +281,25 @@ namespace SteamGamesExporter
                 if (pageNumber > detailedAppList.Count()-1)
                 {
                     newDetailLink = "https://store.steampowered.com/api/appdetails?appids=" + allapps.apps[pageNumber].appid.ToString();
-                    jsonNewData = GetJsonHttpRequest(newDetailLink).Result;
-                    number = jsonNewData.Substring(0,20);
-                    jsonNewData = jsonNewData.Remove(0, 20);
-                    number = number.Replace(allapps.apps[pageNumber].appid.ToString(), "game");
-                    jsonNewData = number + jsonNewData;
+                    try
+                    {
+                        jsonNewData = GetJsonHttpRequest(newDetailLink).Result;
+                        number = jsonNewData.Substring(0, 20);
+                        jsonNewData = jsonNewData.Remove(0, 20);
+                        number = number.Replace(allapps.apps[pageNumber].appid.ToString(), "game");
+                        jsonNewData = number + jsonNewData;
+                    }
+                    catch (Exception)
+                    {
+                        DialogResult result = MessageBox.Show("An Error happend, do you want to export the marked games?", "Error", MessageBoxButtons.YesNo);
+                        if (result == DialogResult.Yes)
+                        {
+                            ExportAllMarkedApps();
+                        }
+                        Environment.Exit(0);
+                    }
+
+
                     try
                     {
                         SteamRoot newGame = JsonConvert.DeserializeObject<SteamRoot>(jsonNewData);
@@ -651,6 +684,8 @@ namespace SteamGamesExporter
                 Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
                 Console.WriteLine((cursorHeight == 4) ? ">Export this game<" : " Export this game");
                 Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles<" : " Export all marked gamefiles");
+                Console.WriteLine((cursorHeight == 5) ? ">Jump to page<" : " Jump to page");
+                Console.WriteLine((cursorHeight == 5) ? ">Open Steam page<" : " Open Steam page");
 
                 Console.ResetColor();
 
