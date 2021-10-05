@@ -324,7 +324,6 @@ namespace SteamGamesExporter
 
         public static void ExportApp(SteamData data, bool includeMovieFile = true)
         {
-            Console.Clear();
             string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             // folder where all Images will be saved
             string imageFolder = programmPath + "/AssetFiles";
@@ -358,13 +357,18 @@ namespace SteamGamesExporter
                 client.DownloadFile(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
                 // Loading Progress 20%
                 Console.Write("o");
-                foreach (Screenshot photo in data.screenshots)
+                if (data.screenshots != null)
                 {
-                    client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + data.name + "/" + photo.id + ".png");
+
+                    foreach (Screenshot photo in data.screenshots)
+                    {
+                        client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + data.name + "/" + photo.id + ".png");
+                    }
                 }
                 // Loading Progress 30%
                 Console.Write("o");
-                if (includeMovieFile)
+                
+                if (includeMovieFile && data.movies != null)
                 {
                     foreach (Movy path in data.movies)
                     {
@@ -444,29 +448,41 @@ namespace SteamGamesExporter
 
                 // Loading Progress 60%
                 Console.Write("o");
-                foreach (Screenshot photo in data.screenshots)
+                if (data.screenshots != null)
                 {
-                    sw.Write("/" + data.name + "/" + photo.id + ".png|");
+
+                    foreach (Screenshot photo in data.screenshots)
+                    {
+                        sw.Write("/" + data.name + "/" + photo.id + ".png|");
+                    }
                 }
                 sw.WriteLine();
                 // Loading Progress 70%
                 Console.Write("o");
-                if (includeMovieFile)
+                if (data.movies != null)
                 {
 
-                    foreach (Movy movie in data.movies)
+                    if (includeMovieFile)
                     {
-                        if (string.IsNullOrWhiteSpace(movie.webm._480))
-                        {
-                            if (string.IsNullOrWhiteSpace(movie.webm.max))
-                            {
 
-                                if (string.IsNullOrWhiteSpace(movie.mp4._480))
+                        foreach (Movy movie in data.movies)
+                        {
+                            if (string.IsNullOrWhiteSpace(movie.webm._480))
+                            {
+                                if (string.IsNullOrWhiteSpace(movie.webm.max))
                                 {
 
-                                    if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                    if (string.IsNullOrWhiteSpace(movie.mp4._480))
                                     {
 
+                                        if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                                        }
                                     }
                                     else
                                     {
@@ -475,7 +491,7 @@ namespace SteamGamesExporter
                                 }
                                 else
                                 {
-                                    sw.Write("/" + data.name + "/" + movie.id + ".mp4|");
+                                    sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
                                 }
                             }
                             else
@@ -483,47 +499,43 @@ namespace SteamGamesExporter
                                 sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
                             }
                         }
-                        else
-                        {
-                            sw.Write("/" + data.name + "/" + movie.id + ".wbm|");
-                        }
                     }
-                }
-                else
-                {
-
-                    foreach (Movy movie in data.movies)
+                    else
                     {
-                        if (string.IsNullOrWhiteSpace(movie.webm._480))
-                        {
-                            if (string.IsNullOrWhiteSpace(movie.webm.max))
-                            {
 
-                                if (string.IsNullOrWhiteSpace(movie.mp4._480))
+                        foreach (Movy movie in data.movies)
+                        {
+                            if (string.IsNullOrWhiteSpace(movie.webm._480))
+                            {
+                                if (string.IsNullOrWhiteSpace(movie.webm.max))
                                 {
 
-                                    if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                    if (string.IsNullOrWhiteSpace(movie.mp4._480))
                                     {
 
+                                        if (string.IsNullOrWhiteSpace(movie.mp4.max))
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            sw.Write(movie.mp4.max + "|");
+                                        }
                                     }
                                     else
                                     {
-                                        sw.Write( movie.mp4.max + "|");
+                                        sw.Write(movie.mp4._480 + "|");
                                     }
                                 }
                                 else
                                 {
-                                    sw.Write(movie.mp4._480 + "|");
+                                    sw.Write(movie.webm.max + "|");
                                 }
                             }
                             else
                             {
-                                sw.Write(movie.webm.max + "|");
+                                sw.Write(movie.webm._480 + "|");
                             }
-                        }
-                        else
-                        {
-                            sw.Write(movie.webm._480 + "|");
                         }
                     }
                 }
