@@ -15,9 +15,12 @@ namespace SteamGamesExporter
 {
     class Program
     {
+        // all loaded apps (appids and their names)
         static public Applist allapps;
+        // all detailed appviews to save Space
         static public List<SteamData> detailedAppList = new List<SteamData>();
-
+        // all Numbers who the user want to Export
+        static public List<int> markedForExport = new List<int>();
 
 
 
@@ -126,8 +129,6 @@ namespace SteamGamesExporter
             int pageNumber = 0;
             // shows selected Button
             int cursorHeight = 0;
-            // all Numbers who the user want to Export
-            Queue<int> markedForExport = new Queue<int>();
 
             //preparing the First GameData
             string number = "";
@@ -226,6 +227,17 @@ namespace SteamGamesExporter
                                     {
                                         Process.Start(path.webm._480);
                                     }
+                                }
+                            }
+                            else if (cursorHeight == 2)
+                            {
+                                if (markedForExport.Contains(pageNumber))
+                                {
+                                    markedForExport.Remove(pageNumber);
+                                }
+                                else
+                                {
+                                    markedForExport.Add(pageNumber);
                                 }
                             }
                             else if (cursorHeight == 3)
@@ -332,7 +344,18 @@ namespace SteamGamesExporter
                 }
                 Console.ForegroundColor = ConsoleColor.White;
 
-                Console.WriteLine((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
+                if (selectedApp.release_date.coming_soon == false)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine(" Recomended to Export");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(" Not Recomended for Export");
+                }
+                Console.Write((cursorHeight == 2) ? ">Mark for export<" : " Mark for export");
+                Console.WriteLine((markedForExport.Contains(selectedPage) ? " (Marked)" : " (Not Marked)"));
                 Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
                 Console.WriteLine((cursorHeight == 4) ? ">Export this game<" : " Export this game");
                 Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles<" : " Export all marked gamefiles");
