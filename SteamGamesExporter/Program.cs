@@ -56,6 +56,7 @@ namespace SteamGamesExporter
 
                             string[] textpart = allFilteredFiles[i].Split(',');
                             allapps.apps.Add(new App() { appid = int.Parse(textpart[0]), name = textpart[1] });
+                            detailedAppList.Add(new SteamData());
                         }
                         break;
                     case DialogResult.Yes:
@@ -278,7 +279,7 @@ namespace SteamGamesExporter
                     default:
                         break;
                 }
-                if (pageNumber > detailedAppList.Count()-1)
+                if (detailedAppList[pageNumber].name == null)
                 {
                     newDetailLink = "https://store.steampowered.com/api/appdetails?appids=" + allapps.apps[pageNumber].appid.ToString();
                     try
@@ -304,11 +305,11 @@ namespace SteamGamesExporter
                     {
                         SteamRoot newGame = JsonConvert.DeserializeObject<SteamRoot>(jsonNewData);
                         newData = newGame.game.data;
-                        detailedAppList.Add(newData);
+                        detailedAppList[pageNumber] = newData;
                     }
                     catch (Newtonsoft.Json.JsonSerializationException)
                     {
-                        detailedAppList.Add(new SteamData());
+                        detailedAppList[pageNumber] = new SteamData() { name = "$NoGame$"};
                     }
 
                 }
@@ -618,7 +619,7 @@ namespace SteamGamesExporter
 
             Console.WriteLine(selectedPage + spaceAfterPage + " Marked:" + markedForExport.Count +" -> ");
 
-            if (selectedApp != null && selectedApp.name != null)
+            if (selectedApp != null && selectedApp.name != null && selectedApp.name != "$NoGame$")
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 string gameName = selectedApp.name;
@@ -684,8 +685,8 @@ namespace SteamGamesExporter
                 Console.WriteLine((cursorHeight == 3) ? ">Show all details<" : " Show all details");
                 Console.WriteLine((cursorHeight == 4) ? ">Export this game<" : " Export this game");
                 Console.WriteLine((cursorHeight == 5) ? ">Export all marked gamefiles<" : " Export all marked gamefiles");
-                Console.WriteLine((cursorHeight == 5) ? ">Jump to page<" : " Jump to page");
-                Console.WriteLine((cursorHeight == 5) ? ">Open Steam page<" : " Open Steam page");
+                Console.WriteLine((cursorHeight == 6) ? ">Jump to page<" : " Jump to page");
+                Console.WriteLine((cursorHeight == 7) ? ">Open Steam page<" : " Open Steam page");
 
                 Console.ResetColor();
 
