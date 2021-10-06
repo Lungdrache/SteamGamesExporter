@@ -78,6 +78,7 @@ namespace SteamGamesExporter
                             foreach (App app in allapps.apps)
                             {
                                 sw.WriteLine(app.appid + "," + app.name);
+                                detailedAppList.Add(new SteamData());
                             }
                             sw.Flush();
                             sw.Close();
@@ -279,7 +280,7 @@ namespace SteamGamesExporter
                     default:
                         break;
                 }
-                if (detailedAppList[pageNumber].name == null)
+                if (detailedAppList[pageNumber] == null || detailedAppList[pageNumber].name == null)
                 {
                     newDetailLink = "https://store.steampowered.com/api/appdetails?appids=" + allapps.apps[pageNumber].appid.ToString();
                     try
@@ -350,7 +351,10 @@ namespace SteamGamesExporter
             {
                 Console.SetCursorPosition(0, 2);
                 Console.WriteLine("  Fortschritt: " + i + "|" + markedForExport.Count + " " + Math.Round((float)i / ((float)markedForExport.Count / 100)) + "%");
-                ExportApp(detailedAppList[markedForExport[i]], includeMovieFile);
+                if (detailedAppList[markedForExport[i]].name != "$NoGame$")
+                {
+                    ExportApp(detailedAppList[markedForExport[i]], includeMovieFile);
+                }
             }
             markedForExport.Clear();
         }
@@ -371,24 +375,26 @@ namespace SteamGamesExporter
             Directory.CreateDirectory(imageFolder);
             Directory.CreateDirectory(fileFolder);
 
+            string nameFolder = System.Text.RegularExpressions.Regex.Replace(data.name, "[^A-Za-z^0-9]", "");
+
             // if the files exists they delete it to update all files
-            if (Directory.Exists(imageFolder + "/" + data.name))
+            if (Directory.Exists(imageFolder + "/" + nameFolder))
             {
-                Directory.Delete(imageFolder + "/" + data.name,true);
+                Directory.Delete(imageFolder + "/" + nameFolder,true);
             }
-            if (File.Exists(fileFolder + "/" + data.name + ".txt"))
+            if (File.Exists(fileFolder + "/" + nameFolder + ".txt"))
             {
-                File.Delete(fileFolder + "/" + data.name + ".txt");
+                File.Delete(fileFolder + "/" + nameFolder + ".txt");
             }
 
-            Directory.CreateDirectory(imageFolder + "/" + data.name);
+            Directory.CreateDirectory(imageFolder + "/" + nameFolder);
 
             // Loading Progress 10%
             Console.Write("o");
 
             using (WebClient client = new WebClient())
             {
-                client.DownloadFile(new Uri(data.header_image), imageFolder + "/" + data.name + "/headerimage" + ".png");
+                client.DownloadFile(new Uri(data.header_image), imageFolder + "/" + nameFolder + "/headerimage" + ".png");
                 // Loading Progress 20%
                 Console.Write("o");
                 if (data.screenshots != null)
@@ -396,7 +402,7 @@ namespace SteamGamesExporter
 
                     foreach (Screenshot photo in data.screenshots)
                     {
-                        client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + data.name + "/" + photo.id + ".png");
+                        client.DownloadFile(new Uri(photo.path_full), imageFolder + "/" + nameFolder + "/" + photo.id + ".png");
                     }
                 }
                 // Loading Progress 30%
@@ -421,22 +427,22 @@ namespace SteamGamesExporter
                                     }
                                     else
                                     {
-                                        client.DownloadFile(new Uri(path.mp4.max), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                        client.DownloadFile(new Uri(path.mp4.max), imageFolder + "/" + nameFolder + "/" + path.id + ".mp4");
                                     }
                                 }
                                 else
                                 {
-                                    client.DownloadFile(new Uri(path.mp4._480), imageFolder + "/" + data.name + "/" + path.id + ".mp4");
+                                    client.DownloadFile(new Uri(path.mp4._480), imageFolder + "/" + nameFolder + "/" + path.id + ".mp4");
                                 }
                             }
                             else
                             {
-                                client.DownloadFile(new Uri(path.webm.max), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
+                                client.DownloadFile(new Uri(path.webm.max), imageFolder + "/" + nameFolder + "/" + path.id + ".wbm");
                             }
                         }
                         else
                         {
-                            client.DownloadFile(new Uri(path.webm._480), imageFolder + "/" + data.name + "/" + path.id + ".wbm");
+                            client.DownloadFile(new Uri(path.webm._480), imageFolder + "/" + nameFolder + "/" + path.id + ".wbm");
                         }
                     }
                 }
@@ -448,7 +454,7 @@ namespace SteamGamesExporter
             // Loading Progress 50%
             Console.Write("o");
 
-            using (StreamWriter sw = File.AppendText(fileFolder + "/" + data.name + ".txt"))
+            using (StreamWriter sw = File.AppendText(fileFolder + "/" + nameFolder + ".txt"))
             {
 
                 //data.name;
@@ -619,7 +625,10 @@ namespace SteamGamesExporter
 
             Console.WriteLine(selectedPage + spaceAfterPage + " Marked:" + markedForExport.Count +" -> ");
 
-            if (selectedApp != null && selectedApp.name != null && selectedApp.name != "$NoGame$")
+            if (selectedApp != null && 
+                selectedApp.name != null && 
+                selectedApp.name != "$NoGame$" &&
+                selectedApp.header_image != null)
             {
                 Console.ForegroundColor = ConsoleColor.White;
                 string gameName = selectedApp.name;
