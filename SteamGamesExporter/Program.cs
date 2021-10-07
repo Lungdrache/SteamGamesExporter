@@ -31,7 +31,7 @@ namespace SteamGamesExporter
             // the selected Json File
             string jsonFile = "";
             string programmPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string filePath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location) + "/Gamelist.json";
+            string filePath = programmPath + "/Gamelist.json";
 
             if (File.Exists(programmPath + "/filteredList.txt"))
             {
@@ -126,8 +126,6 @@ namespace SteamGamesExporter
         {
             // if the User want to exit the menu
             bool isExiting = false;
-            // if the User wish to export the selected Files
-            bool isExporting = false;
             // shows selected page number
             int pageNumber = 0;
             // shows selected Button
